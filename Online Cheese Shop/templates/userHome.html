@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Big Cheez</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style type="text/css">
+      footer{
+        background-color: lightcyan;
+      }
+    </style>
+
+    
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+    <script>
+      $(function(){
+          $('.pagination').find('ul').attr('class','btn-group').css('listStyleType','none')
+          $('.pagination').find('a').attr('class','btn btn-primary')
+          $('select[name="size"]').on('change',function(){
+              var size = $(this).val()
+              size = parseFloat(size)
+              var price= $(this).parents('form.cartForm').find('input[name="price"]').val()
+              price = parseFloat(price)
+              var qty=$(this).parents('form.cartForm').find('select[name="qty"]').val()
+              qty = parseFloat(qty)
+              var total =(size*price*qty)/100
+              $(this).parents('form.cartForm').next().find('.price').text(total)
+
+          })
+          $('select[name="qty"]').on('change',function(){
+              var qty = $(this).val()
+              qty = parseFloat(qty)
+              var price= $(this).parents('form.cartForm').find('input[name="price"]').val()
+              price = parseFloat(price)
+              var size=$(this).parents('form.cartForm').find('select[name="size"]').val()
+              size = parseFloat(size)
+              var total =(size*price*qty)/100
+              $(this).parents('form.cartForm').next().find('.price').text(total)
+
+          })
+
+
+        })
+      
+
+    </script>
+
+  </head>
+  <body>
+      <div class="container-fluid px-0" id="firstNavbar">        
+        <nav class="navbar navbar-expand-lg navbar-dark bg-secondary">
+          <div class="col-md-7"></div>
+          <div class="col-md-5">
+            <ul class="navbar-nav float-right">
+              {% if session['user'] or session['employee']%}
+              <li class="nav-item ">
+                <a class="nav-link" href="/logout">Logout</a>
+              </li>
+              {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="/showSignin">SignIn</a>
+              </li>
+              <li class="nav-item">
+                <a href="/showSignUp" class="nav-link">SignUp</a>
+              </li>
+              {% endif %}
+            </ul>
+          </div>
+        </nav>
+      </div>
+      <div class="container-fluid px-0" id="secondNavbar">
+          <div class="header">
+              <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                <a class="navbar-brand" href="/Home">Big Cheez</a>
+                <div class="collapse navbar-collapse" id="navbarText">
+                  <ul class="navbar-nav mr-auto">
+                    {% if session['employee']%}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/showAddProd">Add item</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                      <form id="searchForm" action="/searchItem" method="post" class="input-group">
+                        <input type="text" name="product" placeholder="Search..." class="form-control">
+                        <button class="btn btn-primary input-group-append submit">Search</button>
+                      </form>
+                      
+                    </li>
+                  </ul>
+                  {% if not session['employee'] %}
+                  <ul class="navbar-nav navbar-right">
+                    <li class="nav-item">
+                       <a class = 'nav-link' href="/Home/viewCart">View Cart</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="/Home/myOrders">My orders</a>
+                    </li>
+                  </ul>
+                  {% endif %}
+                 
+                </div>
+              </nav>
+
+          </div>
+          {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show my-2" role="alert">
+                            <span class="mx-auto">{{ message }}</span>
+                            {% if category != 'success'%}
+                                <span>. Here are links for</span>
+                                <a href="/showSignin" class="alert-link">SignIn</a>
+                                <span> and </span>
+                                <a href="/showSignUp" class="alert-link">SignUp</a>
+                            {% endif %}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+          {% endwith %}
+          <div class="container-fluid">
+          
+          <div class="row">
+            <div class="col-md-2 h-100 d-inline-block filters">
+              <h5>Filter</h5>
+              <hr/>
+              <b>Milk Source</b>
+              <form id="categoryForm" action='/Home/filterItem' method="get">
+                  <input type="hidden" name="item" value="{{item}}">
+                  <div>
+                    {% if 'Cow' in categ %}
+                    <input type="checkbox" id='Cow' name="categoryMilk" value="Cow" checked>Cow
+                    {% else %}
+                    <input type="checkbox" id='Cow' name="categoryMilk" value="Cow">Cow
+                    {% endif %}
+                  </div>
+                  <div>
+                    {% if 'Sheep' in categ %}
+                    <input type="checkbox" id='Sheep' name="categoryMilk" value="Sheep" checked>Sheep
+                    {% else %}
+                    <input type="checkbox" id='Sheep' name="categoryMilk" value="Sheep">Sheep
+                    {% endif %}
+                  </div>
+                  <button class="btn btn-primary" type="submit">Apply</button>
+              </form>
+            </div>
+            <div class="col-md-10 products">
+            {% if data|length>0%}
+                {% if item %}
+                <div>
+                  <h4>Results for: <em>{{item}}</em></h4>
+                </div>
+                {% endif %}
+              <div class="row">
+          
+              {% for row in data %}
+                  <div class="col-md-4 my-2">
+                      <div class="card {{row[3]}}">
+                        <img class="card-img-top" src="../static/images/{{row[2]}}" alt="{{row[1]}}" style="height:250px">
+                        <div class="card-body">
+                          <h5 class="card-title">{{row[1]}}</h5>
+                          <h6 class="card-text float-right"><span>&#36;</span>{{row[6]}} per 100gm</h6>
+                          {% if session['employee'] %}
+                          <form action="/updateProd" method="get">
+                            <input type="hidden" name="id" value="{{row[0]}}">
+                            <button class="btn btn-primary" type="submit">Update</button> 
+                          </form>
+                          <form action="/deleteProd" method="get">
+                            <input type="hidden" name="id" value="{{row[0]}}">
+                            <button class="btn btn-danger" type="submit">Delete</button>
+                          </form>
+                          {% endif %}
+                          <button class="btn btn-primary " data-toggle="modal" data-target="#cartModal{{row[0]}}">View</button> 
+                        </div>
+                      </div>            
+                  </div>
+                  <div class="modal fade" id="cartModal{{row[0]}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="row">
+                            <div class="col-md-4 col-8 my-3">
+                              <div class="card">
+                                <img class="card-img-top" src="../static/images/{{row[2]}}" alt="{{row[1]}}" style="height:100px">
+                                <div class="card-body">
+                                  <h6 class="card-title">{{row[1]}}</h6>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-6 my-3 border py-auto">
+                              <p>Milk source: <span>{{row[3]}}</span></p>
+                              <p>Origin: <span>{{row[4]}}</span></p>
+                              <p>Cheese type: <span>{{row[5]}}</span></p>
+                            </div>
+                          </div>
+                          <form action="/addtoCart" class="cartForm" method="POST">
+                            <div>
+                              <label for="size{{row[0]}}">Select the size(in grams):</label>
+                              <select id="size{{row[0]}}" name="size">
+                                  <option value='100'>100gm</option>
+                                  <option value='200'>200gm</option>
+                                  <option value='300'>300gm</option>
+                                  <option value='500'>500gm</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label for="qty{{row[0]}}">Choose the quantity</label>
+                              <select id="qty{{row[0]}}" name ='qty'>
+                                  <option value="1">1</option>
+                                  <option value="2">2</option>
+                                  <option value="3">3</option>
+                                  <option value="4">4</option>
+                                  <option value="5">5</option>
+                                  <option value="6">6</option>
+                                  <option value="7">7</option>
+                                  <option value="8">8</option>
+                                  <option value="9">9</option>
+                                  <option value="10">10</option>
+                              </select>
+                              
+                            </div> 
+                              <input name="prodId" value="{{row[0]}}" hidden>
+                              <input type="text" name="price" value='{{row[6]}}' hidden>  
+                              {% if not session['employee'] %}                           
+
+                              <input type="submit" name="submit" value="Add to Cart" class="btn btn-primary">
+                              {% endif %}
+
+                          </form>
+                          <b class="float-right">Total: <span>&#36;</span><span class="price">{{row[6]}}</span></b>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+              {% endfor %} 
+              {% else %} 
+                  <div class="col-md-3"> 
+                    <h4 class="text-muted">No item found</h4> 
+                  </div>
+              {% endif %}
+              </div>  
+              <div class="float-right">{{pagination.links}}</div>
+            </div>      
+          </div>
+          </div>
+      </div>
+      <footer class="pt-3">
+        <div class="container">
+         <div class="row">
+            <div class="col-md-6">
+              <p class="h4">
+                 Big Cheez
+              </p>
+              
+              <div class="row">
+                 <div class="col-md-6">
+                    <p class="h6">
+                       Address
+                    </p>
+                    <p>
+                       3124 Stoney Lane <br>
+                       Dallas<br>
+                       Texas-75240
+                    </p>
+                 </div>
+                 <div class="col-md-6">
+                    <p class="h6">
+                       Contact Us
+                    </p>                  
+                    <p>Phone number: <em>972-934-5101</em><br>
+                   Email id: <em>support@bigcheez.com</em></p>
+
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+      </footer>
+
+
+  </body>
+
+
+</html>
