@@ -1,4 +1,5 @@
 # online-cheese-shop
+
 Website name: Big Cheez
 Project Description:
 Big Cheez is a cheese shop in Dallas area. It has wide variety of cheeses. A user can register at Big Cheez and make orders. The orders are only for pickup at the address mentioned on homepage. Orders are placed when the items in cart are checked out without asking for the payment. Once the order is placed, it will take a maximum of 2 days for finishing the order. Mode of communication between customer and shop is through email.
